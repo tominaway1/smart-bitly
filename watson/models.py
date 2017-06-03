@@ -5,7 +5,7 @@ import uuid
 
 class Language(models.Model):
     name = models.CharField(max_length=100)
-    language_code = models.TextField()
+    language_code = models.CharField(max_length=10)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __unicode__(self):
