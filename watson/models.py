@@ -9,4 +9,4 @@ class Language(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __unicode__(self):
-        return self.url
+        return self.name
