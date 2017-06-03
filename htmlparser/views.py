@@ -32,7 +32,7 @@ def create_url(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def read_url(request,uuid):
-    urlObj = UrlProperties.objects.filter(uuid = UUID(uuid).hex).first()
+    urlObj = UrlProperties.objects.filter(uuid = UUID(uuid)).first()
 
     html = get_html_from_link(urlObj.url)
     soup = BeautifulSoup(html)
@@ -41,7 +41,7 @@ def read_url(request,uuid):
         english = Language.objects.filter(language_code = "en").first()
         content = HtmlContent.objects.create(language=english,html_source=soup.prettify(),url=urlObj)
         content.save()
-        
+
     response_data = { 'url' : urlObj.url, 'html': soup.prettify()}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
