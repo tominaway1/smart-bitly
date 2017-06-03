@@ -8,8 +8,7 @@ def translate(model_id,text):
 		** Security is currently just hardcoded, we need to fix this eventually **
 	"""
 
-	url = "https://watson-api-explorer.mybluemix.net/language-translator/api/v2/translate"
-
+        url = "https://gateway.watsonplatform.net/language-translator/api/v2/translate"
 	querystring = {"model_id":model_id,
 	"text":text}
 
