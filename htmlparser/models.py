@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 
 from django.db import models
 from watson.models import Language
+from bs4 import BeautifulSoup
 import uuid
 
+tag_separator = '_#!@(0_2|%'
 
 # Create your models here.
 class UrlProperties(models.Model):
@@ -12,6 +14,29 @@ class UrlProperties(models.Model):
 
     def __unicode__(self):
         return self.url
+
+
+class HtmlSourceTranslator:
+    source = None
+    source_lang_code = None
+    soup_obj = None
+
+    def __init__(self, html_source, source_lang_code):
+        self.source = html_source
+        self.source_lang_code = source_lang_code
+        self.soup_obj = BeautifulSoup(html_source, 'html.parser')
+
+    def translate(self, lang_code):
+        paragraphs_arr = list()
+        for paragraph in self.soup_obj.find_all('p'):
+            paragraphs_arr.push(paragraph)
+        translation_txt = tag_separator.join(paragraphs_arr)
+        translated_text = None  # TODO: translate content to another language
+        translated_paragraphs = translated_text.split(paragraphs_arr)
+        translated_soup = BeautifulSoup(self.html_source, 'html.parser')
+        for idx, paragraph in enumerate(translated_soup.find_all('p')):
+            paragraph.string.replace_with(translated_paragraphs[idx])
+        return translated_soup.prettify()
 
 
 class HtmlContent(models.Model):
@@ -31,9 +56,11 @@ class HtmlContent(models.Model):
             self.language = detected_language
 
     def translate(self, lang_code):
-        translated_source = None  # TODO: translate content to another language
+        translated_source = None
         if translated_source is not None:
-            self.translation_dict[lang_code] = translated_source
+            translator = HtmlSourceTranslator(self.html_source, self.language)
+            self.translation_dict[lang_code] = translator.translate(lang_code)
 
     def __unicode__(self):
         return self.url.name + "-" + self.language
+
