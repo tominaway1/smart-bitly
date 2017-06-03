@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from watson.models import Language
 import uuid
 
 # Create your models here.
@@ -18,7 +19,7 @@ class UrlProperties(models.Model):
 class Html_Content(models.Model):
     url = models.ForeignKey(UrlProperties, null=False)
     html_source = models.TextField()
-    language = models.CharField(max_length=100, null=False)
+    language = models.ForeignKey(Language, null=False)
 
     def __unicode__(self):
         return self.url.name + "-" + self.language
