@@ -2,6 +2,9 @@ from __future__ import unicode_literals
 
 from django.db import models
 from watson.models import Language
+
+#import * from view.py
+
 from bs4 import BeautifulSoup
 import uuid
 
@@ -26,12 +29,12 @@ class HtmlSourceTranslator:
         self.source_lang_code = source_lang_code
         self.soup_obj = BeautifulSoup(html_source, 'html.parser')
 
-    def translate(self, lang_code):
+    def getTranslatedTexts(self, lang_code):
         paragraphs_arr = list()
         for paragraph in self.soup_obj.find_all('p'):
             paragraphs_arr.push(paragraph)
         translation_txt = tag_separator.join(paragraphs_arr)
-        translated_text = None  # TODO: translate content to another language
+
         translated_paragraphs = translated_text.split(paragraphs_arr)
         translated_soup = BeautifulSoup(self.html_source, 'html.parser')
         for idx, paragraph in enumerate(translated_soup.find_all('p')):

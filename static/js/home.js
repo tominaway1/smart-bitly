@@ -13,6 +13,7 @@ $(document).ready(function(){
 	$('#s').focus();
 
 	$('#searchForm').submit(function(){
+		event.preventDefault();
 		googleSearch();
 		return false;
 	});
@@ -22,15 +23,29 @@ $(document).ready(function(){
 		
 		// If no parameters are supplied to the function,
 		// it takes its defaults from the config object above:
-		
+
 		settings = $.extend({},config,settings);
 		settings.term = settings.term || $('#s').val();
 
 		
 		// URL of Google's AJAX search API
-		var apiURL = 'http://ajax.googleapis.com/ajax/services/search/'+settings.type+'?v=1.0&callback=?';
+		var apiUrl = '/html/url';
 		var resultsDiv = $('#resultsDiv');
-		console.log(settings.term);
+		var url = settings.term;
+
+
+		$.post(apiUrl,{'url':url},function(result){
+			var uuid = JSON.stringify(result.url).replace(/\"/g, "");
+			var baseUrl = window.location;
+
+			var link = baseUrl + uuid;
+			console.log(link);
+
+			$('<p>',{className:'notFound',html:'Your URL is ' + link}).appendTo(resultsDiv);
+
+
+		});
+
 		//$.getJSON(apiURL,{q:settings.term,rsz:settings.perPage,start:settings.page*settings.perPage},function(r){
 		//
 		//	var results = r.responseData.results;
