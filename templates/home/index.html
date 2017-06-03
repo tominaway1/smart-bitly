@@ -1,14 +1,46 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Smart Bitly</title>
-  </head>
-  <body bgcolor=white>
-    <p>Application is running</p>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Smart Bitly</title>
 
-    {{ test }}
+<link rel="stylesheet" type="text/css" href="/static/css/styles.css" />
 
-  {% for i in testing %}
-    {{ i }}
-  {% endfor %}
-  </body>
+</head>
+
+<body>
+
+<div id="page">
+
+    <h1>Smart Bitly</h1>
+
+    <form id="searchForm" method="post">
+		<fieldset>
+
+           	<input id="s" type="text" />
+
+            <input type="submit" value="Submit" id="submitButton" />
+
+            <div id="searchInContainer">
+                <input type="radio" name="check" value="site" id="searchSite" checked />
+                <label for="searchSite" id="siteNameLabel">Create Link</label>
+			</div>
+
+            <ul class="icons">
+                <li class="web" title="Web Search" data-searchType="web">Web</li>
+            </ul>
+
+        </fieldset>
+    </form>
+
+    <div id="resultsDiv"></div>
+
+</div>
+
+<!-- It would be great if you leave the link back to the tutorial. Thanks! -->
+<p class="credit"><a href="http://tutorialzine.com/2010/09/google-powered-site-search-ajax-jquery/">Powered by Tzine &amp; Google</a></p>
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/home.js"></script>
+</body>
 </html>
