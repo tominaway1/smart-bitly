@@ -8,6 +8,13 @@ from urlparse import urlparse
 from uuid import UUID
 from bs4 import BeautifulSoup
 
+
+def index(request):
+    parsed_uri = urlparse(request.build_absolute_uri())
+    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    print translate(domain, "hello")
+    return render(request,'home/index.html')
+
 @csrf_exempt
 def create_url(request):
     url = None
@@ -15,7 +22,7 @@ def create_url(request):
         url = request.POST.get("url", "")
 
     urlObj = UrlProperties.objects.create()
-    urlObj.url = url;
+    urlObj.url = url
     urlObj.save()
 
     response_data = { 'url' : str(urlObj.uuid) }
@@ -24,30 +31,19 @@ def create_url(request):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
 def read_url(request,uuid):
     urlObj = UrlProperties.objects.filter(uuid = UUID(uuid).hex).first()
 
     html = get_html_from_link(urlObj.url)
     soup = BeautifulSoup(html)
 
-
-
-    english = Language.objects.filter(language_code = "en").first()
-
-    content = HtmlContent.objects.create(language=english,html_source=soup.prettify(),url=urlObj)
-    content.save()
-
+    if HtmlContent.objects.filter(url=urlObj).first() is None:
+        english = Language.objects.filter(language_code = "en").first()
+        content = HtmlContent.objects.create(language=english,html_source=soup.prettify(),url=urlObj)
+        content.save()
+        
     response_data = { 'url' : urlObj.url, 'html': soup.prettify()}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-def index(request):
-
-    parsed_uri = urlparse(request.build_absolute_uri())
-    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-    print translate(domain, "hello")
-    return render(request,'home/index.html')
-
 
 def translate(base_url, text):
     url = base_url + "watson/translate"
