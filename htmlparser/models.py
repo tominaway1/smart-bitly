@@ -16,7 +16,7 @@ class UrlProperties(models.Model):
         pass  # TODO: detect language from original URL
 
 
-class Html_Content(models.Model):
+class HtmlContent(models.Model):
     url = models.ForeignKey(UrlProperties, null=False)
     html_source = models.TextField()
     language = models.ForeignKey(Language, null=False)
