@@ -21,5 +21,6 @@ urlpatterns = [
     url(r'^html/test$','htmlparser.views.index', name="html"),
     url(r'^html/url$','htmlparser.views.create_url', name="html.create"),
     url(r'^watson/translate$', 'watson.views.translate',name="translate"),
+    url(r'^(?P<uuid>.*)','htmlparser.views.read_url', name = "html.read"),
     url(r'^admin/', admin.site.urls),
 ]

@@ -48,10 +48,6 @@ class HtmlContent(models.Model):
     language = models.ForeignKey(Language, null=False)
     translation_dict = {}
 
-    def __init__(self):
-        self._detect()
-        if self.language is not None:
-            self.translation_dict[self.language] = self.html_source
 
     def _detect(self):
         if self.language is None:
