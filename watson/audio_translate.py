@@ -15,12 +15,13 @@ def audio_translate(uuid,lang,text):
 
 	f = open(ogg_file, 'wb')
 
-	url = "https://watson-api-explorer.mybluemix.net/text-to-speech/api/v1/synthesize"
-
-	querystring = {"accept":"audio/ogg;codecs=opus",
-								 "voice": lang_string,
-								 "text": text_string
-								 }
+	#url = "https://watson-api-explorer.mybluemix.net/text-to-speech/api/v1/synthesize"r
+        url = "https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize"
+	querystring = {
+                "accept":"audio/ogg;codecs=opus",
+	        "voice": lang_string,
+		"text": text_string
+	    }
 
 	headers = {
 	    'authorization': "Basic M2MyZmQwYTQtZmFlMy00NzcyLWI5YTEtMDFmY2U0OWFhNTZlOmY1azNoZXlLV2RKNA=="
