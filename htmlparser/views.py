@@ -3,7 +3,7 @@ from django.shortcuts import render
 import requests,json
 from django.views.decorators.csrf import csrf_exempt
 from models import UrlProperties
-
+from urlparse import urlparse
 
 @csrf_exempt
 def create_url(request):
@@ -21,12 +21,17 @@ def create_url(request):
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def index(request):
-	print translate("hello")
-	return render(request,'home/index.html')
+
+    parsed_uri = urlparse(request.build_absolute_uri())
+    print parsed_uri
+    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    print domain
+    print translate(domain, "hello")
+    return render(request,'home/index.html')
 
 
-def translate(text):
-	url = "http://localhost:8000/watson/translate"
+def translate(base_url, text):
+	url = base_url + "watson/translate"
 
 	payload = "{{\"src\":\"en\",\"dst\":\"fr\",\"text\":\"{0}\"}}".format(text)
 	print payload
