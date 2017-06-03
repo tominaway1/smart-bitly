@@ -1,6 +1,6 @@
 import requests
 import sys
-def translate(model_id,text): 
+def translate(model_id,text):
 	"""
 		model-id: source to final translation given by ibm model id get request,
 		text: whatever you want translated, preferably in the language you give
@@ -27,10 +27,10 @@ if __name__== '__main__':
 		print "Unexpected Format"
 		sys.exit(1)
 	model_id= sys.argv[1]
-	
+
 	text=sys.argv[2]
 	translate(model_id,text)
 
 
 
- 
+
