@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7a53872c-d025-4848-b6f1-5a7d7a3e3470" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/templates/home/index.html" afterPath="$PROJECT_DIR$/templates/home/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/watson/admin.py" afterPath="$PROJECT_DIR$/watson/admin.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/watson/models.py" afterPath="$PROJECT_DIR$/watson/models.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/htmlparser/models.py" afterPath="$PROJECT_DIR$/htmlparser/models.py" />
     </list>
     <ignored path="smart-bitly.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -70,10 +68,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="admin.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="admin.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/watson/admin.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0198939">
+            <state vertical-scroll-proportion="0.0">
               <caret line="1" column="27" selection-start-line="1" selection-start-column="27" selection-end-line="1" selection-end-column="27" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
@@ -82,11 +80,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/htmlparser/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="12" selection-end-column="23" />
+            <state vertical-scroll-proportion="0.1591512">
+              <caret line="8" column="48" selection-start-line="8" selection-start-column="48" selection-end-line="8" selection-end-column="48" />
               <folding>
                 <element signature="e#0#39#0" expanded="true" />
               </folding>
@@ -108,11 +106,11 @@
         <option value="$PROJECT_DIR$/htmlparser/views.py" />
         <option value="$PROJECT_DIR$/smartbitly/settings.py" />
         <option value="$PROJECT_DIR$/htmlparser/admin.py" />
-        <option value="$PROJECT_DIR$/htmlparser/models.py" />
         <option value="$PROJECT_DIR$/static/css/styles.css" />
         <option value="$PROJECT_DIR$/templates/home/index.html" />
         <option value="$PROJECT_DIR$/watson/models.py" />
         <option value="$PROJECT_DIR$/watson/admin.py" />
+        <option value="$PROJECT_DIR$/htmlparser/models.py" />
       </list>
     </option>
   </component>
@@ -645,16 +643,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/htmlparser/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="12" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/watson/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -687,10 +675,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/watson/admin.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0198939">
+        <state vertical-scroll-proportion="0.0">
           <caret line="1" column="27" selection-start-line="1" selection-start-column="27" selection-end-line="1" selection-end-column="27" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/htmlparser/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.1591512">
+          <caret line="8" column="48" selection-start-line="8" selection-start-column="48" selection-end-line="8" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
