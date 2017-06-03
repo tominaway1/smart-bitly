@@ -19,5 +19,6 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^$', 'home.views.index', name='home'),
     url(r'^html/test$','htmlparser.views.index', name="html"),
+    url(r'^watson/translate$', 'watson.views.translate',name="translate"),
     url(r'^admin/', admin.site.urls),
 ]
