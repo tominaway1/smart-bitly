@@ -55,6 +55,8 @@ def read(request):
           <source id="sources" src="https://3c2fd0a4-fae3-4772-b9a1-01fce49aa56e:f5k3heyKWdJ4@stream.watsonplatform.net/text-to-speech/api/v1/synthesize?accept=audio%2Fogg%3Bcodecs%3Dopus&voice=es-ES_EnriqueVoice&text=%20hello." type="audio/ogg">
         </audio>
     """
+
+
     start="<audio id = \"audio\" controls><source id=\"sources\" src=\""
     end= "\" type=\"audio/ogg\"></audio>\""
     html_start="https://3c2fd0a4-fae3-4772-b9a1-01fce49aa56e:f5k3heyKWdJ4@stream.watsonplatform.net/text-to-speech/api/v1/synthesize?accept=audio%2Fogg%3Bcodecs%3Dopus&"
