@@ -154,7 +154,7 @@ def generate_translation_with_audio(request, lang_code, uuid):
 
         translatedTexts[i] = translate(domain, text, languageCode)
 
-        # if i == 50: break
+        if i == 50: break
     sourceDomain = get_domain_from_url(src.url.url)
 
     if sourceDomain[-1] != "/":
@@ -206,7 +206,7 @@ def generate_translation(request, lang_code, uuid):
 
         translatedTexts[i] = translate(domain, text, languageCode)
 
-        # if i == 50: break
+        if i == 50: break
     sourceDomain = get_domain_from_url(src.url.url)
 
     if sourceDomain[-1] != "/":
