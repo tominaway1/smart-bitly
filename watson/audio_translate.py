@@ -1,5 +1,12 @@
 import requests
 import sys
+def get_audio_url(lang,text):
+	lang_dict={"english":"en-US_MichaelVoice", "spanish": "es-ES_EnriqueVoice","german":"de-DE_DieterVoice", "french":
+	"fr-FR_ReneeVoice", "italian":"it-IT_FrancescaVoice","portuguese":"pt-BR_IsabelaVoice", "japanese":"ja-JP_EmiVoice"}
+	lang_string= lang_dict[lang]
+	return "voice="+lang_string+"&text="+text
+
+	#voice=es-ES_EnriqueVoice&text=%20hello
 def audio_translate(uuid,lang,text):
 	"""
 		uuid: unique identifier,
@@ -39,7 +46,8 @@ if __name__== '__main__':
 	uuid= sys.argv[1]
 	lang= sys.argv[2]
 	text=sys.argv[3]
-	audio_translate(uuid,lang,text)
+	#audio_translate(uuid,lang,text)
+	print get_audio_url(lang,text)
 
 
 
