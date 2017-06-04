@@ -25,7 +25,7 @@ def index(request):
     hst = HtmlSourceTranslator(src.html_source, src.language.language_code);
 
     domain = get_domain_from_url(request.build_absolute_uri())
-    texts = hst.getTextToBeTranslated('p')
+    texts = hst.text_arr_to_be_translated_for_tags('p')
     translatedTexts = [None] *  len(texts)
 
     for i in range(len(texts)):
@@ -39,7 +39,7 @@ def index(request):
     if source_domain[-1] != "/":
         source_domain = source_domain + "/"
 
-    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"/","href=\"" + source_domain)\
+    translatedHtmlSource = hst.translated_html_from_text_arr_for_tags(translatedTexts,'p').replace("href=\"/","href=\"" + source_domain)\
         .replace("<script src=\"/","<script src=\"" + source_domain)\
 
 
@@ -196,7 +196,7 @@ def generate_translation(request, lang_code, uuid):
     hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
 
     domain = get_domain_from_url(request.build_absolute_uri())
-    texts = hst.getTextToBeTranslated('p')
+    texts = hst.text_arr_to_be_translated_for_tags('p')
     translatedTexts = [None] *  len(texts)
 
     for i in range(len(texts)):
@@ -210,7 +210,7 @@ def generate_translation(request, lang_code, uuid):
     if sourceDomain[-1] != "/":
         sourceDomain = sourceDomain + "/"
 
-    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p')
+    translatedHtmlSource = hst.translated_html_from_text_arr_for_tags(translatedTexts,'p')
     translatedHtmlSource = clean_html(translatedHtmlSource, sourceDomain)
 
     content = HtmlContent.objects.filter(url=src.url, language=language).first()
@@ -235,31 +235,41 @@ class HtmlSourceTranslator:
         self.source_lang_code = source_lang_code
         self.soup_obj = BeautifulSoup(html_source, 'html.parser')
 
-    def getTextToBeTranslated(self, tag):
-        paragraphs_arr = list()
-        for paragraph in self.soup_obj.find_all(tag):
-            paragraphs_arr.append(paragraph.getText().encode('utf-8').strip())
+    def text_arr_to_be_translated_for_tags(self, tags):
+        if not isinstance(tags, list):
+            tags = [tags]
+        result = list()
+        for tag in tags:
+            text_arr_for_current_tag = list()
+            for text in self.soup_obj.find_all(tag):
+                text_arr_for_current_tag.push(text.getText().encode('utf-8').strip())
+            result.push(text_arr_for_current_tag)
 
-        return paragraphs_arr
+        return result
 
-    def createTranslatedHtml(self,  translated_paragraphs, tag):
+    def translated_html_from_text_arr_for_tags(self,  translated_text_arr, tags):
         translated_soup = BeautifulSoup(self.source, 'html.parser')
 
-        for idx, paragraph in enumerate(translated_soup.find_all(tag)):
-            # print paragraph.getText()
-            if paragraph.string is None: paragraph.string = ""
+        if not isinstance(tags, list):
+            tags = [tags]
 
-            if(idx > len(translated_paragraphs) or translated_paragraphs[idx] is None):
-                break
+        for tag_idx, tag in enumerate(tags):
+            for idx, text in enumerate(translated_soup.find_all(tag)):
+                if text.string is None:
+                    text.string = ""
 
-            print "-----"
-            print paragraph
-            print "-"
-            print translated_paragraphs[idx]
-            print "-----"
+                if idx > len(translated_text_arr[tag_idx]) or translated_text_arr[tag_idx][idx] is None:
+                    break
 
-            if "\"error_code\":400" in translated_paragraphs[idx]: continue
+                print "-----"
+                print text
+                print "-"
+                print translated_text_arr[tag_idx][idx]
+                print "-----"
 
-            paragraph.string.replace_with(translated_paragraphs[idx])
+                if "\"error_code\":400" in translated_text_arr[tag_idx][idx]:
+                    continue
+
+                text.string.replace_with(translated_text_arr[tag_idx][idx])
         return translated_soup.prettify()
 
