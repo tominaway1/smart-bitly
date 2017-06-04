@@ -9,7 +9,7 @@ import uuid
 
 # Create your models here.
 class UrlProperties(models.Model):
-    url = models.CharField(max_length=100)
+    url = models.CharField(max_length=1000)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __unicode__(self):
