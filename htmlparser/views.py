@@ -255,7 +255,6 @@ class HtmlSourceTranslator:
             if(idx > len(translated_paragraphs) or translated_paragraphs[idx] is None):
                 break
 
-
             if "\"error_code\":400" in translated_paragraphs[idx]: continue
 
             paragraph.string.replace_with(translated_paragraphs[idx])
