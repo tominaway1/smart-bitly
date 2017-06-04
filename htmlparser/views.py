@@ -14,20 +14,31 @@ def getDomainFromUrl(url):
     return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
 
 def index(request):
-    languageCode = "es"
+    languageCode = "fr"
 
     language = Language.objects.filter(language_code = languageCode).first()
 
-    src = HtmlContent.objects.all()[0]
-    hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
+    src = HtmlContent.objects.filter(id=24)[0]
+    hst = HtmlSourceTranslator(src.html_source, src.language.language_code);
 
     domain = getDomainFromUrl(request.build_absolute_uri())
     texts = hst.getTextToBeTranslated('p')
     translatedTexts = [None] *  len(texts)
+
     for i in range(len(texts)):
         text = texts[i]
+
         translatedTexts[i] = translate(domain, text, languageCode)
-    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"","href=\"" + getDomainFromUrl(src.url.url))
+        # print translatedTexts[i]
+        if i == 50: break
+    sourceDomain = getDomainFromUrl(src.url.url)
+
+    if sourceDomain[-1] != "/":
+        sourceDomain = sourceDomain + "/"
+
+    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"/","href=\"" + sourceDomain)\
+        .replace("<script src=\"/","<script src=\"" + sourceDomain)\
+
 
     content = HtmlContent.objects.filter(url=src.url, language=language).first()
     if content is None:
@@ -50,7 +61,6 @@ def create_url(request):
 
     response_data = { 'url' : str(urlObj.uuid) }
 
-
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def read_url(request,uuid):
@@ -64,8 +74,8 @@ def read_url(request,uuid):
         content = HtmlContent.objects.create(language=english,html_source=soup.prettify(),url=urlObj)
         content.save()
 
-    response_data = { 'url' : urlObj.url, 'html': soup.prettify()}
-    return render(request,'htmlparser/index.html')
+    d = { 'url' : urlObj.url, 'uuid' : uuid}
+    return render(request,'htmlparser/index.html', d)
 
 def translate(base_url, text, languageCode):
     url = base_url + "watson/translate"
@@ -79,7 +89,59 @@ def translate(base_url, text, languageCode):
     return response['response']
 
 def get_html_from_link(link):
-    return urllib.urlopen(link).read()
+    response = requests.request("GET", link)
+
+    return response.text
+
+def generate_translation(request, lang_code, uuid):
+    languageCode = lang_code
+    urlObj = UrlProperties.objects.filter(uuid = UUID(uuid)).first()
+
+    language = Language.objects.filter(language_code = languageCode).first()
+    english = Language.objects.filter(language_code = "en").first()
+
+
+    target = HtmlContent.objects.filter(url=urlObj, language=language)
+
+    if(len(target) > 0):
+        response = HttpResponse()
+        response.write(target[0].html_source)
+        return response
+
+
+    src = HtmlContent.objects.filter(url=urlObj, language=english)[0]
+
+    hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
+
+    domain = getDomainFromUrl(request.build_absolute_uri())
+    texts = hst.getTextToBeTranslated('p')
+    translatedTexts = [None] *  len(texts)
+
+    for i in range(len(texts)):
+        text = texts[i]
+
+        translatedTexts[i] = translate(domain, text, languageCode)
+
+        if i == 50: break
+    sourceDomain = getDomainFromUrl(src.url.url)
+
+    if sourceDomain[-1] != "/":
+        sourceDomain = sourceDomain + "/"
+
+    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"/","href=\"" + sourceDomain)\
+        .replace("<script src=\"/","<script src=\"" + sourceDomain)
+
+
+    content = HtmlContent.objects.filter(url=src.url, language=language).first()
+    if content is None:
+        content = HtmlContent.objects.create(language=language, html_source=translatedHtmlSource, url=src.url)
+    else:
+        content.html_source = translatedHtmlSource
+    content.save()
+
+    response = HttpResponse()
+    response.write(translatedHtmlSource)
+    return response
 
 
 class HtmlSourceTranslator:
@@ -103,7 +165,19 @@ class HtmlSourceTranslator:
         translated_soup = BeautifulSoup(self.source, 'html.parser')
 
         for idx, paragraph in enumerate(translated_soup.find_all(tag)):
-            if paragraph.string is None: continue
+            # print paragraph.getText()
+            if paragraph.string is None: paragraph.string = ""
+
+            if(idx > len(translated_paragraphs) or translated_paragraphs[idx] is None):
+                break
+
+            # print "-----"
+            # print paragraph
+            # print "-"
+            # print translated_paragraphs[idx]
+            # print "-----"
+
+            if "\"error_code\":400" in translated_paragraphs[idx]: continue
 
             paragraph.string.replace_with(translated_paragraphs[idx])
         return translated_soup.prettify()
