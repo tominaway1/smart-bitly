@@ -140,7 +140,7 @@ def generate_translation(request, lang_code, uuid):
 
         translatedTexts[i] = translate(domain, text, languageCode)
 
-        if i == 50: break
+        # if i == 50: break
     sourceDomain = get_domain_from_url(src.url.url)
 
     if sourceDomain[-1] != "/":
