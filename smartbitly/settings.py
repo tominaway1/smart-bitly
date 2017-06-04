@@ -80,7 +80,8 @@ WSGI_APPLICATION = 'smartbitly.wsgi.application'
 
 DATABASES = {}
 DATABASES['default'] =  dj_database_url.config()
-db_from_env = dj_database_url.config(default='postgres://dugpatveaoeesq:3a3657c369b1356fc390835e727bbfa302c46e5d7583708312511a83d01ebccf@ec2-54-83-26-65.compute-1.amazonaws.com:5432/d1254qolqhehf5')
+#db_from_env = dj_database_url.config(default='postgres://dugpatveaoeesq:3a3657c369b1356fc390835e727bbfa302c46e5d7583708312511a83d01ebccf@ec2-54-83-26-65.compute-1.amazonaws.com:5432/d1254qolqhehf5')
+db_from_env = dj_database_url.config(default='postgres://u01d45022c7804e98a0cdc2c34edff36a:ped831f8124254c9aa18c00f0ba4d10fd@192.155.194.212:5433/d8add477d369d4e48805d1a4bdf70a4bb')
 DATABASES['default'].update(db_from_env)
 
 # Password validation
