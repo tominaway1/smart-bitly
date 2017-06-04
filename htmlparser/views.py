@@ -9,35 +9,35 @@ from uuid import UUID
 from bs4 import BeautifulSoup
 
 
-def getDomainFromUrl(url):
+def get_domain_from_url(url):
     parsed_uri = urlparse(url)
     return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
 
 def index(request):
-    languageCode = "fr"
+    language_code = "fr"
 
-    language = Language.objects.filter(language_code = languageCode).first()
+    language = Language.objects.filter(language_code = language_code).first()
 
     src = HtmlContent.objects.filter(id=24)[0]
     hst = HtmlSourceTranslator(src.html_source, src.language.language_code);
 
-    domain = getDomainFromUrl(request.build_absolute_uri())
+    domain = get_domain_from_url(request.build_absolute_uri())
     texts = hst.getTextToBeTranslated('p')
     translatedTexts = [None] *  len(texts)
 
     for i in range(len(texts)):
         text = texts[i]
 
-        translatedTexts[i] = translate(domain, text, languageCode)
+        translatedTexts[i] = translate(domain, text, language_code)
         # print translatedTexts[i]
         if i == 50: break
-    sourceDomain = getDomainFromUrl(src.url.url)
+    source_domain = get_domain_from_url(src.url.url)
 
-    if sourceDomain[-1] != "/":
-        sourceDomain = sourceDomain + "/"
+    if source_domain[-1] != "/":
+        source_domain = source_domain + "/"
 
-    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"/","href=\"" + sourceDomain)\
-        .replace("<script src=\"/","<script src=\"" + sourceDomain)\
+    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"/","href=\"" + source_domain)\
+        .replace("<script src=\"/","<script src=\"" + source_domain)\
 
 
     content = HtmlContent.objects.filter(url=src.url, language=language).first()
@@ -55,11 +55,11 @@ def create_url(request):
     if request.method == 'POST':
         url = request.POST.get("url", "")
 
-    urlObj = UrlProperties.objects.create()
-    urlObj.url = url
-    urlObj.save()
+    url_obj = UrlProperties.objects.create()
+    url_obj.url = url
+    url_obj.save()
 
-    response_data = { 'url' : str(urlObj.uuid) }
+    response_data = { 'url' : str(url_obj.uuid) }
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -89,9 +89,19 @@ def translate(base_url, text, languageCode):
     return response['response']
 
 def get_html_from_link(link):
-    response = requests.request("GET", link)
+    html = urllib.urlopen(link).read()
 
-    return response.text
+    if html is None or html is "":
+        response = requests.request("GET", link)
+        html = response.text
+
+    return html
+
+
+def clean_html(htmlSource, sourceDomain):
+    return htmlSource.replace("href=\"/","href=\"" + sourceDomain).replace("<script src=\"/","<script src=\"" + sourceDomain)
+
+
 
 def generate_translation(request, lang_code, uuid):
     languageCode = lang_code
@@ -104,7 +114,15 @@ def generate_translation(request, lang_code, uuid):
     target = HtmlContent.objects.filter(url=urlObj, language=language)
 
     if(len(target) > 0):
+        if lang_code == "en":
+            html_source = target[0].html_source
+            source_domain = get_domain_from_url(target[0].url.url)
+            response = HttpResponse()
+            response.write(clean_html(html_source,source_domain))
+            return response
+
         response = HttpResponse()
+
         response.write(target[0].html_source)
         return response
 
@@ -113,7 +131,7 @@ def generate_translation(request, lang_code, uuid):
 
     hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
 
-    domain = getDomainFromUrl(request.build_absolute_uri())
+    domain = get_domain_from_url(request.build_absolute_uri())
     texts = hst.getTextToBeTranslated('p')
     translatedTexts = [None] *  len(texts)
 
@@ -123,14 +141,13 @@ def generate_translation(request, lang_code, uuid):
         translatedTexts[i] = translate(domain, text, languageCode)
 
         if i == 50: break
-    sourceDomain = getDomainFromUrl(src.url.url)
+    sourceDomain = get_domain_from_url(src.url.url)
 
     if sourceDomain[-1] != "/":
         sourceDomain = sourceDomain + "/"
 
-    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p').replace("href=\"/","href=\"" + sourceDomain)\
-        .replace("<script src=\"/","<script src=\"" + sourceDomain)
-
+    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p')
+    translatedHtmlSource = clean_html(translatedHtmlSource, sourceDomain)
 
     content = HtmlContent.objects.filter(url=src.url, language=language).first()
     if content is None:
