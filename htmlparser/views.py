@@ -7,7 +7,10 @@ from watson.models import Language
 from urlparse import urlparse
 from uuid import UUID
 from bs4 import BeautifulSoup
+from watson.audio_translate import get_audio_div
 
+def remove_unicode(text):
+    return ''.join([i if ord(i) < 128 else ' ' for i in text])
 
 def get_domain_from_url(url):
     parsed_uri = urlparse(url)
@@ -101,7 +104,68 @@ def get_html_from_link(link):
 def clean_html(htmlSource, sourceDomain):
     return htmlSource.replace("href=\"/","href=\"" + sourceDomain).replace("<script src=\"/","<script src=\"" + sourceDomain)
 
+def generate_translation_with_audio(request, lang_code, uuid):
+    languageCode = lang_code
+    urlObj = UrlProperties.objects.filter(uuid = UUID(uuid)).first()
 
+    language = Language.objects.filter(language_code = languageCode).first()
+    english = Language.objects.filter(language_code = "en").first()
+
+
+    target = HtmlContent.objects.filter(url=urlObj, language=language)
+
+    if(len(target) > 0):
+        if lang_code == "en":
+            html_source = target[0].html_source
+            source_domain = get_domain_from_url(target[0].url.url)
+
+            hst = HtmlSourceTranslator(target[0].html_source,target[0].language.language_code);
+            texts = hst.getTextToBeTranslated('p')
+            textString = remove_unicode(" ".join(texts))
+
+            response = HttpResponse()
+            response.write(clean_html(html_source,source_domain).replace("</body>",get_audio_div(target[0].language.language_code,textString)))
+
+            return response
+
+        response = HttpResponse()
+        hst = HtmlSourceTranslator(target[0].html_source,target[0].language.language_code);
+        texts = hst.getTextToBeTranslated('p')
+
+        textString = remove_unicode(" ".join(texts))
+
+        html_source = target[0].html_source
+
+        html_source = html_source.replace("</body>",get_audio_div(target[0].language.language_code,textString.encode('ascii',errors='ignore')) +"</body>")
+        response.write(html_source)
+        return response
+
+
+    src = HtmlContent.objects.filter(url=urlObj, language=english)[0]
+
+    hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
+
+    domain = get_domain_from_url(request.build_absolute_uri())
+    texts = hst.getTextToBeTranslated('p')
+    translatedTexts = [None] *  len(texts)
+
+    for i in range(len(texts)):
+        text = texts[i]
+
+        translatedTexts[i] = translate(domain, text, languageCode)
+
+        # if i == 50: break
+    sourceDomain = get_domain_from_url(src.url.url)
+
+    if sourceDomain[-1] != "/":
+        sourceDomain = sourceDomain + "/"
+
+    translatedHtmlSource = hst.createTranslatedHtml(translatedTexts,'p')
+    translatedHtmlSource = clean_html(translatedHtmlSource, sourceDomain)
+
+    response = HttpResponse()
+    response.write(translatedHtmlSource)
+    return response
 
 def generate_translation(request, lang_code, uuid):
     languageCode = lang_code
