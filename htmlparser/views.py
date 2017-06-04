@@ -65,7 +65,7 @@ def read_url(request,uuid):
         content.save()
 
     response_data = { 'url' : urlObj.url, 'html': soup.prettify()}
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
+    return render(request,'htmlparser/index.html')
 
 def translate(base_url, text, languageCode):
     url = base_url + "watson/translate"
