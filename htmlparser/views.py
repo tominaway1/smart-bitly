@@ -255,11 +255,6 @@ class HtmlSourceTranslator:
             if(idx > len(translated_paragraphs) or translated_paragraphs[idx] is None):
                 break
 
-            print "-----"
-            print paragraph
-            print "-"
-            print translated_paragraphs[idx]
-            print "-----"
 
             if "\"error_code\":400" in translated_paragraphs[idx]: continue
 
