@@ -7,7 +7,10 @@ from watson.models import Language
 from urlparse import urlparse
 from uuid import UUID
 from bs4 import BeautifulSoup
+from watson.audio_translate import get_audio_div
 
+def remove_unicode(text):
+    return ''.join([i if ord(i) < 128 else ' ' for i in text])
 
 def get_domain_from_url(url):
     parsed_uri = urlparse(url)
@@ -101,9 +104,72 @@ def get_html_from_link(link):
 def clean_html(htmlSource, sourceDomain):
     return htmlSource.replace("href=\"/","href=\"" + sourceDomain).replace("<script src=\"/","<script src=\"" + sourceDomain)
 
+def generate_translation_with_audio(request, lang_code, uuid):
+    languageCode = lang_code
+    urlObj = UrlProperties.objects.filter(uuid = UUID(uuid)).first()
 
+    language = Language.objects.filter(language_code = languageCode).first()
+    english = Language.objects.filter(language_code = "en").first()
+
+
+    target = HtmlContent.objects.filter(url=urlObj, language=language)
+
+    if(len(target) > 0):
+        if lang_code == "en":
+            html_source = target[0].html_source
+            source_domain = get_domain_from_url(target[0].url.url)
+
+            hst = HtmlSourceTranslator(target[0].html_source,target[0].language.language_code);
+            texts = hst.text_arr_to_be_translated_for_tags('p')
+            textString = remove_unicode(" ".join(texts))
+
+            response = HttpResponse()
+            response.write(clean_html(html_source,source_domain).replace("</body>",get_audio_div(target[0].language.language_code,textString)))
+
+            return response
+
+        response = HttpResponse()
+        hst = HtmlSourceTranslator(target[0].html_source,target[0].language.language_code);
+        texts = hst.text_arr_to_be_translated_for_tags('p')
+
+        textString = remove_unicode(" ".join(texts))
+
+        html_source = target[0].html_source
+
+        html_source = html_source.replace("</body>",get_audio_div(target[0].language.language_code,textString.encode('ascii',errors='ignore')) +"</body>")
+        response.write(html_source)
+        return response
+
+
+    src = HtmlContent.objects.filter(url=urlObj, language=english)[0]
+
+    hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
+
+    domain = get_domain_from_url(request.build_absolute_uri())
+    texts = hst.text_arr_to_be_translated_for_tags('p')
+    translatedTexts = [None] *  len(texts)
+
+    for i in range(len(texts)):
+        text = texts[i]
+
+        translatedTexts[i] = translate(domain, text, languageCode)
+
+        # if i == 50: break
+    sourceDomain = get_domain_from_url(src.url.url)
+
+    if sourceDomain[-1] != "/":
+        sourceDomain = sourceDomain + "/"
+
+    translatedHtmlSource = hst.translated_html_from_text_arr_for_tags(translatedTexts, 'p')
+    translatedHtmlSource = clean_html(translatedHtmlSource, sourceDomain)
+
+    response = HttpResponse()
+    response.write(translatedHtmlSource)
+    return response
 
 def generate_translation(request, lang_code, uuid):
+    lang_arr = ['p','h1','h2','h3','h4']
+
     languageCode = lang_code
     urlObj = UrlProperties.objects.filter(uuid = UUID(uuid)).first()
 
@@ -132,7 +198,7 @@ def generate_translation(request, lang_code, uuid):
     hst = HtmlSourceTranslator(src.html_source,src.language.language_code);
 
     domain = get_domain_from_url(request.build_absolute_uri())
-    texts = hst.text_arr_to_be_translated_for_tags('p')
+    texts = hst.text_arr_to_be_translated_for_tags(lang_arr)
     translatedTexts = [None] *  len(texts)
 
     for i in range(len(texts)):
@@ -146,7 +212,7 @@ def generate_translation(request, lang_code, uuid):
     if sourceDomain[-1] != "/":
         sourceDomain = sourceDomain + "/"
 
-    translatedHtmlSource = hst.translated_html_from_text_arr_for_tags(translatedTexts,'p')
+    translatedHtmlSource = hst.translated_html_from_text_arr_for_tags(translatedTexts,lang_arr)
     translatedHtmlSource = clean_html(translatedHtmlSource, sourceDomain)
 
     content = HtmlContent.objects.filter(url=src.url, language=language).first()
@@ -161,6 +227,7 @@ def generate_translation(request, lang_code, uuid):
     return response
 
 
+
 class HtmlSourceTranslator:
     source = None
     source_lang_code = None
@@ -171,41 +238,30 @@ class HtmlSourceTranslator:
         self.source_lang_code = source_lang_code
         self.soup_obj = BeautifulSoup(html_source, 'html.parser')
 
-    def text_arr_to_be_translated_for_tags(self, tags):
-        if not isinstance(tags, list):
-            tags = [tags]
-        result = list()
-        for tag in tags:
-            text_arr_for_current_tag = list()
-            for text in self.soup_obj.find_all(tag):
-                text_arr_for_current_tag.push(text.getText().encode('utf-8').strip())
-            result.push(text_arr_for_current_tag)
+    def text_arr_to_be_translated_for_tags(self, tag):
+        paragraphs_arr = list()
+        for paragraph in self.soup_obj.find_all(tag):
+            paragraphs_arr.append(paragraph.getText().encode('utf-8').strip())
 
-        return result
+        return paragraphs_arr
 
-    def translated_html_from_text_arr_for_tags(self,  translated_text_arr, tags):
+    def translated_html_from_text_arr_for_tags(self, translated_paragraphs, tag):
         translated_soup = BeautifulSoup(self.source, 'html.parser')
 
-        if not isinstance(tags, list):
-            tags = [tags]
+        for idx, paragraph in enumerate(translated_soup.find_all(tag)):
+            # print paragraph.getText()
+            if paragraph.string is None: paragraph.string = ""
 
-        for tag_idx, tag in enumerate(tags):
-            for idx, text in enumerate(translated_soup.find_all(tag)):
-                if text.string is None:
-                    text.string = ""
+            if(idx > len(translated_paragraphs) or translated_paragraphs[idx] is None):
+                break
 
-                if idx > len(translated_text_arr[tag_idx]) or translated_text_arr[tag_idx][idx] is None:
-                    break
+            print "-----"
+            print paragraph
+            print "-"
+            print translated_paragraphs[idx]
+            print "-----"
 
-                print "-----"
-                print text
-                print "-"
-                print translated_text_arr[tag_idx][idx]
-                print "-----"
+            if "\"error_code\":400" in translated_paragraphs[idx]: continue
 
-                if "\"error_code\":400" in translated_text_arr[tag_idx][idx]:
-                    continue
-
-                text.string.replace_with(translated_text_arr[tag_idx][idx])
+            paragraph.string.replace_with(translated_paragraphs[idx])
         return translated_soup.prettify()
-
